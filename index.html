@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>X1 Leader Slot Checker</title>
+<meta name="description" content="Real-time leader slot checker for X1 Mainnet validators. Find your next block production slot instantly."/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -29,7 +30,6 @@
     overflow-x: hidden;
   }
 
-  /* Animated grid background */
   body::before {
     content: '';
     position: fixed;
@@ -42,7 +42,6 @@
     z-index: 0;
   }
 
-  /* Glowing orbs */
   body::after {
     content: '';
     position: fixed;
@@ -74,7 +73,6 @@
     padding: 40px 24px 80px;
   }
 
-  /* Header */
   header {
     text-align: center;
     margin-bottom: 48px;
@@ -112,9 +110,7 @@
     color: #fff;
   }
 
-  h1 span {
-    color: var(--accent);
-  }
+  h1 span { color: var(--accent); }
 
   .subtitle {
     margin-top: 12px;
@@ -123,7 +119,6 @@
     font-weight: 400;
   }
 
-  /* Card */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -144,7 +139,6 @@
     margin-bottom: 12px;
   }
 
-  /* Input group */
   .input-group {
     display: flex;
     flex-direction: column;
@@ -219,7 +213,6 @@
     box-shadow: none;
   }
 
-  /* Slot time meter */
   .slot-meter {
     display: flex;
     align-items: center;
@@ -241,7 +234,6 @@
     transition: width 0.8s ease, background 0.5s;
   }
 
-  /* Results grid */
   .results-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -263,9 +255,7 @@
     background: rgba(0,245,196,0.04);
   }
 
-  .stat-card.full-width {
-    grid-column: 1 / -1;
-  }
+  .stat-card.full-width { grid-column: 1 / -1; }
 
   .stat-label {
     font-family: 'Space Mono', monospace;
@@ -286,7 +276,6 @@
 
   .stat-value.accent { color: var(--accent); }
   .stat-value.warn { color: var(--warn); }
-  .stat-value.big { font-size: 32px; }
 
   .stat-sub {
     font-size: 11px;
@@ -294,7 +283,6 @@
     margin-top: 4px;
   }
 
-  /* Countdown */
   .countdown {
     display: flex;
     gap: 16px;
@@ -302,9 +290,7 @@
     flex-wrap: wrap;
   }
 
-  .countdown-unit {
-    text-align: center;
-  }
+  .countdown-unit { text-align: center; }
 
   .countdown-num {
     font-family: 'Space Mono', monospace;
@@ -329,10 +315,7 @@
     font-family: 'Space Mono', monospace;
   }
 
-  /* Progress bar for epoch */
-  .epoch-progress {
-    margin-top: 12px;
-  }
+  .epoch-progress { margin-top: 12px; }
 
   .epoch-bar {
     height: 6px;
@@ -349,7 +332,6 @@
     transition: width 0.8s ease;
   }
 
-  /* Status indicator */
   .status-row {
     display: flex;
     align-items: center;
@@ -361,9 +343,9 @@
   }
 
   .status-row.measuring { background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.2); color: var(--warn); }
-  .status-row.fetching { background: rgba(0,136,255,0.08); border: 1px solid rgba(0,136,255,0.2); color: var(--accent2); }
-  .status-row.done { background: rgba(0,245,196,0.08); border: 1px solid rgba(0,245,196,0.2); color: var(--accent); }
-  .status-row.error { background: rgba(255,68,102,0.08); border: 1px solid rgba(255,68,102,0.2); color: var(--danger); }
+  .status-row.fetching  { background: rgba(0,136,255,0.08);  border: 1px solid rgba(0,136,255,0.2);  color: var(--accent2); }
+  .status-row.done      { background: rgba(0,245,196,0.08);  border: 1px solid rgba(0,245,196,0.2);  color: var(--accent); }
+  .status-row.error     { background: rgba(255,68,102,0.08);  border: 1px solid rgba(255,68,102,0.2);  color: var(--danger); }
 
   .dot {
     width: 8px; height: 8px;
@@ -379,7 +361,6 @@
     width: 10px; height: 10px;
   }
 
-  /* Log */
   .log {
     font-family: 'Space Mono', monospace;
     font-size: 11px;
@@ -396,20 +377,14 @@
   .log-line { display: flex; gap: 8px; }
   .log-time { color: rgba(0,245,196,0.4); flex-shrink: 0; }
   .log-msg { color: var(--muted); }
-  .log-msg.ok { color: rgba(0,245,196,0.7); }
+  .log-msg.ok  { color: rgba(0,245,196,0.7); }
   .log-msg.err { color: var(--danger); }
 
-  /* No slots message */
-  .no-slots {
-    text-align: center;
-    padding: 32px;
-  }
-
+  .no-slots { text-align: center; padding: 32px; }
   .no-slots .icon { font-size: 40px; margin-bottom: 12px; }
   .no-slots h3 { color: #fff; margin-bottom: 8px; }
-  .no-slots p { color: var(--muted); font-size: 14px; }
+  .no-slots p  { color: var(--muted); font-size: 14px; }
 
-  /* Slot list preview */
   .slot-list {
     display: flex;
     flex-wrap: wrap;
@@ -437,23 +412,18 @@
 
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
+    50%       { opacity: 0.5; transform: scale(0.8); }
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .animate-in {
-    animation: fadeIn 0.4s ease forwards;
-  }
+  .animate-in { animation: fadeIn 0.4s ease forwards; }
 
-  /* Footer */
   footer {
     text-align: center;
     margin-top: 48px;
@@ -469,14 +439,12 @@
 <div class="orb2"></div>
 <div class="container">
 
-  <!-- Header -->
   <header>
     <div class="badge">X1 Mainnet</div>
     <h1>Leader Slot<br/><span>Checker</span></h1>
     <p class="subtitle">Find your validator's next block production slot in real-time</p>
   </header>
 
-  <!-- Input Card -->
   <div class="card">
     <div class="card-label">// Configuration</div>
     <div class="input-group">
@@ -484,7 +452,7 @@
         <label>Validator Identity Pubkey</label>
         <input type="text" id="pubkey"
           placeholder="e.g. Bees4UreRCWJKeDJub23QSyCej3wcybFdwv5Dem8fTWt"
-          value="Bees4UreRCWJKeDJub23QSyCej3wcybFdwv5Dem8fTWt"/>
+          value=""/>
       </div>
       <div class="field">
         <label>RPC Endpoint</label>
@@ -496,10 +464,8 @@
     </div>
   </div>
 
-  <!-- Results -->
   <div id="resultsSection" class="hidden">
 
-    <!-- Status log -->
     <div class="card">
       <div class="card-label">// Live Log</div>
       <div id="statusRow" class="status-row fetching">
@@ -509,8 +475,8 @@
       <div class="log" id="logBox"></div>
     </div>
 
-    <!-- Main stats -->
     <div id="mainStats" class="hidden">
+
       <div class="card animate-in">
         <div class="card-label">// Slot Timing</div>
         <div class="results-grid" style="margin-bottom:16px">
@@ -543,7 +509,6 @@
         </div>
       </div>
 
-      <!-- Next leader slot -->
       <div id="noSlotsCard" class="card hidden animate-in">
         <div class="no-slots">
           <div class="icon">⏳</div>
@@ -558,7 +523,7 @@
         <div class="results-grid">
           <div class="stat-card highlight full-width">
             <div class="stat-label">Time Until Next Block</div>
-            <div class="countdown" id="countdown">
+            <div class="countdown">
               <div class="countdown-unit">
                 <span class="countdown-num" id="ctHours">00</span>
                 <span class="countdown-label">Hours</span>
@@ -600,13 +565,8 @@
 </div>
 
 <script>
-  const CORS_PROXY = 'https://corsproxy.io/?';
-
   let countdownInterval = null;
-  let nextSlotAbs = null;
   let msPerSlot = 400;
-  let currentSlotVal = 0;
-  let checkTimestamp = 0;
 
   function log(msg, type='') {
     const box = document.getElementById('logBox');
@@ -621,35 +581,30 @@
   function setStatus(text, type='fetching') {
     const row = document.getElementById('statusRow');
     row.className = `status-row ${type}`;
-    const dot = type === 'done' ? '<div class="dot" style="background:var(--accent)"></div>'
+    const dot = type === 'done'  ? '<div class="dot" style="background:var(--accent)"></div>'
                : type === 'error' ? '<div class="dot" style="background:var(--danger)"></div>'
                : '<div class="dot spin"></div>';
     row.innerHTML = `${dot}<span>${text}</span>`;
   }
 
-  async function rpcCall(rpc, method, params=[]) {
-    const url = CORS_PROXY + encodeURIComponent(rpc);
-    const res = await fetch(url, {
+  // All RPC calls go through our own Vercel serverless proxy /api/rpc
+  async function rpcCall(method, params=[]) {
+    const res = await fetch('/api/rpc', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({jsonrpc:'2.0', id:1, method, params})
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status} from proxy`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     return data.result;
   }
 
-  async function getSlot(rpc) {
-    return await rpcCall(rpc, 'getSlot');
-  }
-
   async function runCheck() {
     const pubkey = document.getElementById('pubkey').value.trim();
-    const rpc = document.getElementById('rpc').value.trim();
+    if (!pubkey) { alert('Please enter a validator pubkey.'); return; }
 
-    if (!pubkey || !rpc) { alert('Please fill in both fields.'); return; }
-
-    // Reset
+    // Reset UI
     document.getElementById('resultsSection').classList.remove('hidden');
     document.getElementById('mainStats').classList.add('hidden');
     document.getElementById('noSlotsCard').classList.add('hidden');
@@ -662,62 +617,57 @@
     log('Starting slot time measurement (5s sample)...');
 
     try {
-      // Step 1: Measure slot time
-      const slot1 = await getSlot(rpc);
+      // Step 1: Measure real slot time
+      const slot1 = await rpcCall('getSlot');
       const t1 = Date.now();
       log(`Slot sample 1: ${slot1.toLocaleString()}`);
 
       await new Promise(r => setTimeout(r, 5000));
 
-      const slot2 = await getSlot(rpc);
+      const slot2 = await rpcCall('getSlot');
       const t2 = Date.now();
       log(`Slot sample 2: ${slot2.toLocaleString()}`);
 
       const slotDiff = slot2 - slot1;
       const timeDiff = t2 - t1;
       msPerSlot = slotDiff > 0 ? Math.round(timeDiff / slotDiff) : 400;
-      currentSlotVal = slot2;
-      checkTimestamp = t2;
 
       log(`Measured: ${slotDiff} slots in ${timeDiff}ms → ${msPerSlot}ms/slot`, 'ok');
 
-      // Update slot time display
       document.getElementById('slotMs').textContent = `${msPerSlot}ms`;
-      const quality = msPerSlot < 420 ? 'Fast ✓' : msPerSlot < 480 ? 'Normal' : 'Slow';
-      const fillPct = Math.min(100, Math.max(0, ((500 - msPerSlot) / 200) * 100));
+      const quality   = msPerSlot < 420 ? 'Fast ✓' : msPerSlot < 480 ? 'Normal' : 'Slow';
+      const fillPct   = Math.min(100, Math.max(0, ((500 - msPerSlot) / 200) * 100));
       const fillColor = msPerSlot < 420 ? 'var(--accent)' : msPerSlot < 480 ? 'var(--warn)' : 'var(--danger)';
-      document.getElementById('slotMeterFill').style.width = fillPct + '%';
+      document.getElementById('slotMeterFill').style.width    = fillPct + '%';
       document.getElementById('slotMeterFill').style.background = fillColor;
-      document.getElementById('slotQuality').textContent = quality;
+      document.getElementById('slotQuality').textContent     = quality;
 
       // Step 2: Epoch info
       setStatus('Fetching epoch info...', 'fetching');
-      const epochInfo = await rpcCall(rpc, 'getEpochInfo');
-      const slotIndex = epochInfo.slotIndex;
-      const absSlot = epochInfo.absoluteSlot;
+      const epochInfo    = await rpcCall('getEpochInfo');
+      const slotIndex    = epochInfo.slotIndex;
+      const absSlot      = epochInfo.absoluteSlot;
       const slotsInEpoch = epochInfo.slotsInEpoch;
-      const epochStart = absSlot - slotIndex;
-      const epochNum = epochInfo.epoch;
-      const epochPct = Math.round((slotIndex / slotsInEpoch) * 100);
-      const slotsLeft = slotsInEpoch - slotIndex;
+      const epochStart   = absSlot - slotIndex;
+      const epochNum     = epochInfo.epoch;
+      const epochPct     = Math.round((slotIndex / slotsInEpoch) * 100);
+      const slotsLeft    = slotsInEpoch - slotIndex;
 
       log(`Epoch ${epochNum} | ${slotIndex.toLocaleString()}/${slotsInEpoch.toLocaleString()} slots (${epochPct}%)`, 'ok');
 
       document.getElementById('currentSlot').textContent = absSlot.toLocaleString();
-      document.getElementById('epochInfo').textContent = `Epoch ${epochNum}`;
-      document.getElementById('epochFill').style.width = epochPct + '%';
-      document.getElementById('epochPct').textContent = epochPct + '%';
-      document.getElementById('epochSlots').textContent = slotsLeft.toLocaleString() + ' slots remaining';
+      document.getElementById('epochInfo').textContent   = `Epoch ${epochNum}`;
+      document.getElementById('epochFill').style.width   = epochPct + '%';
+      document.getElementById('epochPct').textContent    = epochPct + '%';
+      document.getElementById('epochSlots').textContent  = slotsLeft.toLocaleString() + ' slots remaining';
 
       // Step 3: Leader schedule
       setStatus('Fetching leader schedule...', 'fetching');
       log(`Fetching leader schedule for epoch ${epochNum}...`);
-      const schedule = await rpcCall(rpc, 'getLeaderSchedule');
-
+      const schedule = await rpcCall('getLeaderSchedule');
       if (!schedule) throw new Error('getLeaderSchedule returned null');
 
       const myRelSlots = schedule[pubkey];
-
       if (!myRelSlots || myRelSlots.length === 0) {
         log(`No leader slots found for ${pubkey.slice(0,8)}...`, 'err');
         setStatus('Done — no slots this epoch', 'done');
@@ -730,11 +680,10 @@
       log(`Found ${myRelSlots.length} leader slots assigned this epoch`, 'ok');
 
       // Step 4: Find upcoming slots
-      const currentAbs = slot2;
       const upcoming = myRelSlots
         .map(rel => epochStart + rel)
-        .filter(abs => abs > currentAbs)
-        .sort((a,b) => a-b);
+        .filter(abs => abs > slot2)
+        .sort((a, b) => a - b);
 
       if (upcoming.length === 0) {
         log('All assigned slots have passed this epoch', 'err');
@@ -745,13 +694,13 @@
         return;
       }
 
-      nextSlotAbs = upcoming[0];
-      const diff = nextSlotAbs - currentAbs;
-      const totalSecs = Math.round(diff * msPerSlot / 1000);
+      const nextSlot   = upcoming[0];
+      const diff       = nextSlot - slot2;
+      const totalSecs  = Math.round(diff * msPerSlot / 1000);
 
-      log(`Next slot: ${nextSlotAbs.toLocaleString()} (${diff.toLocaleString()} slots away, ~${Math.floor(totalSecs/60)}m ${totalSecs%60}s)`, 'ok');
+      log(`Next slot: ${nextSlot.toLocaleString()} (${diff.toLocaleString()} slots away, ~${Math.floor(totalSecs/60)}m ${totalSecs%60}s)`, 'ok');
 
-      // Render upcoming slot pills
+      // Slot pills
       const slotList = document.getElementById('slotList');
       slotList.innerHTML = '';
       upcoming.slice(0, 20).forEach((s, i) => {
@@ -767,10 +716,9 @@
         slotList.appendChild(more);
       }
 
-      document.getElementById('nextSlotNum').textContent = nextSlotAbs.toLocaleString();
+      document.getElementById('nextSlotNum').textContent   = nextSlot.toLocaleString();
       document.getElementById('slotsRemaining').textContent = diff.toLocaleString();
 
-      // Start live countdown
       startCountdown(diff, msPerSlot, t2);
 
       setStatus('Live — countdown active', 'done');
@@ -779,7 +727,7 @@
 
     } catch(e) {
       log('Error: ' + e.message, 'err');
-      setStatus('Error — check console', 'error');
+      setStatus('Error — ' + e.message, 'error');
       console.error(e);
     }
 
@@ -790,21 +738,21 @@
     if (countdownInterval) clearInterval(countdownInterval);
 
     function tick() {
-      const elapsed = Date.now() - startTime;
+      const elapsed      = Date.now() - startTime;
       const elapsedSlots = Math.floor(elapsed / ms);
-      const remaining = Math.max(0, initialDiff - elapsedSlots);
-      const remainingSecs = Math.max(0, Math.round(remaining * ms / 1000));
+      const remaining    = Math.max(0, initialDiff - elapsedSlots);
+      const remainSecs   = Math.max(0, Math.round(remaining * ms / 1000));
 
-      const h = Math.floor(remainingSecs / 3600);
-      const m = Math.floor((remainingSecs % 3600) / 60);
-      const s = remainingSecs % 60;
+      const h = Math.floor(remainSecs / 3600);
+      const m = Math.floor((remainSecs % 3600) / 60);
+      const s = remainSecs % 60;
 
-      document.getElementById('ctHours').textContent = String(h).padStart(2,'0');
-      document.getElementById('ctMins').textContent = String(m).padStart(2,'0');
-      document.getElementById('ctSecs').textContent = String(s).padStart(2,'0');
+      document.getElementById('ctHours').textContent      = String(h).padStart(2,'0');
+      document.getElementById('ctMins').textContent       = String(m).padStart(2,'0');
+      document.getElementById('ctSecs').textContent       = String(s).padStart(2,'0');
       document.getElementById('slotsRemaining').textContent = remaining.toLocaleString();
 
-      if (remainingSecs <= 0) {
+      if (remainSecs <= 0) {
         clearInterval(countdownInterval);
         setStatus('Leader slot reached! 🎉', 'done');
       }
