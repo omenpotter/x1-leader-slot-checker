@@ -1,9 +1,4 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false,
-  "functions": {
-    "api/rpc.js": {
-      "runtime": "edge"
-    }
-  }
+  "trailingSlash": false
 }
