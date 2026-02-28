@@ -725,6 +725,7 @@
 <script>
   let countdownInterval = null;
   let msPerSlot = 400;
+  let halfRtt = 0;
 
   function toggleDropdown() {
     document.getElementById('launchDropdown').classList.toggle('open');
@@ -782,21 +783,29 @@
     log('Starting slot time measurement (5s sample)...');
 
     try {
-      // Step 1: Measure real slot time
-      const slot1 = await rpcCall('getSlot');
+      // Step 1: Measure proxy round-trip latency (ping)
+      const p1 = Date.now();
+      await rpcCall('getSlot');
+      const rttMs = Date.now() - p1;
+      halfRtt = Math.round(rttMs / 2);
+      log(`Proxy RTT: ${rttMs}ms (one-way ~${halfRtt}ms)`);
+
+      // Step 2: Measure real slot time over 3s window
       const t1 = Date.now();
+      const slot1 = await rpcCall('getSlot');
       log(`Slot sample 1: ${slot1.toLocaleString()}`);
 
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 3000));
 
       const slot2 = await rpcCall('getSlot');
       const t2 = Date.now();
       log(`Slot sample 2: ${slot2.toLocaleString()}`);
 
       const slotDiff = slot2 - slot1;
-      const timeDiff = t2 - t1;
+      // Subtract round-trip latency from measured window to get true elapsed time
+      const timeDiff = Math.max(1, (t2 - t1) - rttMs);
       msPerSlot = slotDiff > 0 ? Math.round(timeDiff / slotDiff) : 400;
-      log(`Measured: ${slotDiff} slots in ${timeDiff}ms → ${msPerSlot}ms/slot`, 'ok');
+      log(`Measured: ${slotDiff} slots in ${timeDiff}ms (RTT-corrected) → ${msPerSlot}ms/slot`, 'ok');
 
       document.getElementById('slotMs').textContent        = `${msPerSlot}ms`;
       const quality   = msPerSlot < 420 ? 'Fast ✓' : msPerSlot < 480 ? 'Normal' : 'Slow';
@@ -881,7 +890,7 @@
       document.getElementById('nextSlotNum').textContent    = nextSlot.toLocaleString();
       document.getElementById('slotsRemaining').textContent = diff.toLocaleString();
 
-      startCountdown(diff, msPerSlot, t2);
+      startCountdown(diff, msPerSlot, t2 - halfRtt);
       setStatus('Live — countdown active', 'done');
       document.getElementById('mainStats').classList.remove('hidden');
       document.getElementById('nextSlotCard').classList.remove('hidden');
