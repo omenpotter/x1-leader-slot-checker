@@ -867,6 +867,8 @@
     clearInterval(countdownInterval);
     clearInterval(pollInterval);
 
+    var slotSample1, slotMid1;
+
     setStatus('Connecting...', 'fetching');
 
     // Step 1: detect direct vs proxy
@@ -875,7 +877,6 @@
 
       // Step 2: fire getEpochInfo + getLeaderSchedule IN PARALLEL
       // Also fire two getSlot calls 3s apart for slot time measurement
-      var slotSample1, slotMid1;
 
       var epochPromise    = rpcCall('getEpochInfo');
       var schedulePromise = rpcCall('getLeaderSchedule');
