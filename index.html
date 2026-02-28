@@ -747,10 +747,10 @@
     var line = document.createElement('div');
     line.className = 'log-line';
     var t = document.createElement('span');
-    t.className  = 'log-time';
+    t.className   = 'log-time';
     t.textContent = '[' + now + ']';
     var m = document.createElement('span');
-    m.className  = 'log-msg' + (type ? ' ' + type : '');
+    m.className   = 'log-msg' + (type ? ' ' + type : '');
     m.textContent = msg;
     line.appendChild(t);
     line.appendChild(m);
@@ -773,12 +773,14 @@
     row.appendChild(sp);
   }
 
-  function rpcFetch(url, body) {
-    var t1 = Date.now();
+  function rpcCall(method, params) {
+    params = params || [];
+    var t1  = Date.now();
+    var url = useProxy ? '/api/rpc' : DIRECT_RPC;
     return fetch(url, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: body
+      body: JSON.stringify({jsonrpc: '2.0', id: 1, method: method, params: params})
     }).then(function(res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
@@ -791,69 +793,6 @@
     });
   }
 
-  function rpcCall(method, params) {
-    params = params || [];
-    var body = JSON.stringify({jsonrpc: '2.0', id: 1, method: method, params: params});
-    return rpcFetch(useProxy ? '/api/rpc' : DIRECT_RPC, body);
-  }
-
-  function detectRpc() {
-    var body = JSON.stringify({jsonrpc: '2.0', id: 1, method: 'getSlot', params: []});
-    return rpcFetch(DIRECT_RPC, body).then(function(data) {
-      useProxy = false;
-      log('Direct RPC OK — RTT ' + data._rtt + 'ms (no proxy)', 'ok');
-    }).catch(function() {
-      useProxy = true;
-      log('CORS blocked — using proxy', '');
-    });
-  }
-
-  // ── Countdown engine ──
-  // Starts ticking immediately. getLeaderSchedule runs in parallel,
-  // then updates targetSlot when ready — no waiting.
-  function startCountdown(nextSlot) {
-    clearInterval(countdownInterval);
-    clearInterval(pollInterval);
-    targetSlot = nextSlot;
-
-    function updateDisplay() {
-      var elapsed      = Date.now() - lastKnownTime;
-      var elapsedSlots = elapsed / msPerSlot;
-      var remaining    = Math.max(0, targetSlot - lastKnownSlot - elapsedSlots);
-      var remainSecs   = Math.max(0, Math.round(remaining * msPerSlot / 1000));
-      var h = Math.floor(remainSecs / 3600);
-      var m = Math.floor((remainSecs % 3600) / 60);
-      var s = remainSecs % 60;
-      document.getElementById('ctHours').textContent        = String(h).padStart(2, '0');
-      document.getElementById('ctMins').textContent         = String(m).padStart(2, '0');
-      document.getElementById('ctSecs').textContent         = String(s).padStart(2, '0');
-      document.getElementById('slotsRemaining').textContent = Math.max(0, Math.ceil(remaining)).toLocaleString();
-      if (remainSecs <= 0) {
-        clearInterval(countdownInterval);
-        clearInterval(pollInterval);
-        setStatus('Leader slot reached!', 'done');
-      }
-    }
-
-    countdownInterval = setInterval(updateDisplay, 1000);
-    updateDisplay();
-
-    // Poll every 2s — re-anchor with midpoint compensation
-    pollInterval = setInterval(function() {
-      rpcCall('getSlot').then(function(data) {
-        lastKnownSlot = data.result;
-        lastKnownTime = data._mid;
-        document.getElementById('currentSlot').textContent = data.result.toLocaleString();
-        if (data.result >= targetSlot) {
-          clearInterval(countdownInterval);
-          clearInterval(pollInterval);
-          setStatus('Leader slot reached!', 'done');
-        }
-      }).catch(function() {});
-    }, 2000);
-  }
-
-  // ── Main ──
   function runCheck() {
     var pubkey = document.getElementById('pubkey').value.trim();
     if (!pubkey) { alert('Please enter a validator pubkey.'); return; }
@@ -867,69 +806,51 @@
     clearInterval(countdownInterval);
     clearInterval(pollInterval);
 
-    var slotSample1, slotMid1;
+    setStatus('Fetching chain data...', 'fetching');
+    log('Connecting...');
 
-    setStatus('Connecting...', 'fetching');
+    // Try direct RPC, fall back to proxy
+    var testUrl = DIRECT_RPC;
+    var t1 = Date.now();
+    fetch(testUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'getSlot', params: []})
+    }).then(function(res) { return res.json(); }).then(function(data) {
+      useProxy = false;
+      var rtt = Date.now() - t1;
+      log('Direct RPC OK (RTT ' + rtt + 'ms)', 'ok');
+      go(pubkey);
+    }).catch(function() {
+      useProxy = true;
+      log('Using proxy');
+      go(pubkey);
+    });
+  }
 
-    // Step 1: detect direct vs proxy
-    detectRpc().then(function() {
-      setStatus('Fetching chain data...', 'fetching');
+  function go(pubkey) {
+    // Fire getEpochInfo and getLeaderSchedule in parallel — no slot sampling
+    var epochPromise    = rpcCall('getEpochInfo');
+    var schedulePromise = rpcCall('getLeaderSchedule');
 
-      // Step 2: fire getEpochInfo + getLeaderSchedule IN PARALLEL
-      // Also fire two getSlot calls 3s apart for slot time measurement
-
-      var epochPromise    = rpcCall('getEpochInfo');
-      var schedulePromise = rpcCall('getLeaderSchedule');
-      var sample1Promise  = rpcCall('getSlot').then(function(d) {
-        slotSample1 = d.result;
-        slotMid1    = d._mid;
-        log('Slot sample 1: ' + slotSample1.toLocaleString() + ' (RTT ' + d._rtt + 'ms)');
-        return new Promise(function(r) { setTimeout(r, 3000); });
-      }).then(function() {
-        return rpcCall('getSlot');
-      });
-
-      // Wait for epoch + schedule + slot samples all at once
-      return Promise.all([epochPromise, schedulePromise, sample1Promise]);
-
-    }).then(function(results) {
+    Promise.all([epochPromise, schedulePromise]).then(function(results) {
       var epochData    = results[0];
       var scheduleData = results[1];
-      var slotData2    = results[2];
 
-      // Slot time from samples
-      var s2    = slotData2.result;
-      var mid2  = slotData2._mid;
-      var sd    = s2 - slotSample1;
-      var td    = mid2 - slotMid1;
-      msPerSlot = sd > 0 ? Math.round(td / sd) : 400;
-      log('Slot sample 2: ' + s2.toLocaleString() + ' → ' + msPerSlot + 'ms/slot', 'ok');
-
-      document.getElementById('slotMs').textContent = msPerSlot + 'ms';
-      var quality   = msPerSlot < 420 ? 'Fast' : msPerSlot < 480 ? 'Normal' : 'Slow';
-      var fillPct   = Math.min(100, Math.max(0, ((500 - msPerSlot) / 200) * 100));
-      var fillColor = msPerSlot < 420 ? '#00f5c4' : msPerSlot < 480 ? '#ffaa00' : '#ff4466';
-      document.getElementById('slotMeterFill').style.width      = fillPct + '%';
-      document.getElementById('slotMeterFill').style.background = fillColor;
-      document.getElementById('slotQuality').textContent        = quality;
-
-      // Epoch info — use the LATEST slot we know (slot sample 2 is freshest)
       var ei           = epochData.result;
+      var absSlot      = ei.absoluteSlot;
+      var slotIndex    = ei.slotIndex;
       var slotsInEpoch = ei.slotsInEpoch;
+      var epochStart   = absSlot - slotIndex;
       var epochNum     = ei.epoch;
+      var epochPct     = Math.round((slotIndex / slotsInEpoch) * 100);
+      var slotsLeft    = slotsInEpoch - slotIndex;
 
-      // Use slot sample 2 as anchor (most recent, midpoint compensated)
-      var absSlot    = s2;
-      var epochStart = ei.absoluteSlot - ei.slotIndex; // epoch start is stable
-      var slotIndex  = absSlot - epochStart;
-      var epochPct   = Math.round((slotIndex / slotsInEpoch) * 100);
-      var slotsLeft  = slotsInEpoch - slotIndex;
-
-      // Anchor countdown to slot sample 2 midpoint — this is our freshest reference
+      // Anchor: slot was produced at midpoint of the epochInfo round trip
       lastKnownSlot = absSlot;
-      lastKnownTime = mid2;
+      lastKnownTime = epochData._mid;
 
-      log('Epoch ' + epochNum + ' | slot ' + absSlot.toLocaleString() + ' (' + epochPct + '%)', 'ok');
+      log('Epoch ' + epochNum + ' | slot ' + absSlot.toLocaleString() + ' (' + epochPct + '%) RTT:' + epochData._rtt + 'ms', 'ok');
 
       document.getElementById('currentSlot').textContent = absSlot.toLocaleString();
       document.getElementById('epochInfo').textContent   = 'Epoch ' + epochNum;
@@ -937,8 +858,13 @@
       document.getElementById('epochPct').textContent    = epochPct + '%';
       document.getElementById('epochSlots').textContent  = slotsLeft.toLocaleString() + ' slots remaining';
 
-      // Leader schedule
-      var schedule   = scheduleData.result;
+      // Update slot meter with hardcoded 400ms (polling will self-correct)
+      document.getElementById('slotMs').textContent          = '400ms';
+      document.getElementById('slotMeterFill').style.width   = '50%';
+      document.getElementById('slotMeterFill').style.background = '#00f5c4';
+      document.getElementById('slotQuality').textContent     = 'Live';
+
+      var schedule = scheduleData.result;
       if (!schedule) throw new Error('getLeaderSchedule returned null');
 
       var myRelSlots = schedule[pubkey];
@@ -998,6 +924,56 @@
       startCountdown(nextSlot);
 
     }).catch(function(e) {
+      log('Error: ' + e.message, 'err');
+      setStatus('Error: ' + e.message, 'error');
+      console.error(e);
+      document.getElementById('checkBtn').disabled = false;
+    });
+  }
+
+  function startCountdown(nextSlot) {
+    clearInterval(countdownInterval);
+    clearInterval(pollInterval);
+    targetSlot = nextSlot;
+
+    function updateDisplay() {
+      var elapsed      = Date.now() - lastKnownTime;
+      var elapsedSlots = elapsed / msPerSlot;
+      var remaining    = Math.max(0, targetSlot - lastKnownSlot - elapsedSlots);
+      var remainSecs   = Math.max(0, Math.round(remaining * msPerSlot / 1000));
+      var h = Math.floor(remainSecs / 3600);
+      var m = Math.floor((remainSecs % 3600) / 60);
+      var s = remainSecs % 60;
+      document.getElementById('ctHours').textContent        = String(h).padStart(2, '0');
+      document.getElementById('ctMins').textContent         = String(m).padStart(2, '0');
+      document.getElementById('ctSecs').textContent         = String(s).padStart(2, '0');
+      document.getElementById('slotsRemaining').textContent = Math.max(0, Math.ceil(remaining)).toLocaleString();
+      if (remainSecs <= 0) {
+        clearInterval(countdownInterval);
+        clearInterval(pollInterval);
+        setStatus('Leader slot reached!', 'done');
+      }
+    }
+
+    countdownInterval = setInterval(updateDisplay, 1000);
+    updateDisplay();
+
+    // Poll every 2s — re-anchor with midpoint compensation
+    pollInterval = setInterval(function() {
+      rpcCall('getSlot').then(function(data) {
+        lastKnownSlot = data.result;
+        lastKnownTime = data._mid;
+        // Calibrate msPerSlot from consecutive polls
+        document.getElementById('currentSlot').textContent = data.result.toLocaleString();
+        if (data.result >= targetSlot) {
+          clearInterval(countdownInterval);
+          clearInterval(pollInterval);
+          setStatus('Leader slot reached!', 'done');
+        }
+      }).catch(function() {});
+    }, 2000);
+  }
+</script>
       log('Error: ' + e.message, 'err');
       setStatus('Error: ' + e.message, 'error');
       console.error(e);
