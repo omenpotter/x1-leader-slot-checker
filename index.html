@@ -804,6 +804,7 @@
     document.getElementById('logBox').innerHTML = '';
     document.getElementById('checkBtn').disabled = true;
     if (countdownInterval) clearInterval(countdownInterval);
+    if (pollInterval) clearInterval(pollInterval);
 
     setStatus('Measuring live slot time...', 'measuring');
     log('Measuring slot time (3s sample)...');
@@ -920,7 +921,7 @@
             document.getElementById('slotsRemaining').textContent = diff.toLocaleString();
 
             // Use epochFetchTime as reference — this is when we KNOW absSlot was current
-            startCountdown(diff, msPerSlot, epochFetchTime);
+            startCountdown(nextSlot, msPerSlot);
             setStatus('Live — countdown active', 'done');
             document.getElementById('mainStats').classList.remove('hidden');
             document.getElementById('nextSlotCard').classList.remove('hidden');
@@ -936,32 +937,77 @@
     });
   }
 
-  function startCountdown(initialDiff, ms, startTime) {
+  // Live polling: re-fetches current slot every 5s and recalibrates countdown
+  // This eliminates drift completely — timer always reflects actual chain state
+  var targetSlot = 0;
+  var lastKnownSlot = 0;
+  var lastKnownTime = 0;
+  var pollInterval = null;
+
+  function startCountdown(nextSlot, ms) {
     if (countdownInterval) clearInterval(countdownInterval);
+    if (pollInterval) clearInterval(pollInterval);
 
-    function tick() {
-      var elapsed      = Date.now() - startTime;
-      var elapsedSlots = Math.floor(elapsed / ms);
-      var remaining    = Math.max(0, initialDiff - elapsedSlots);
-      var remainSecs   = Math.max(0, Math.round(remaining * ms / 1000));
+    targetSlot = nextSlot;
 
-      var h = Math.floor(remainSecs / 3600);
-      var m = Math.floor((remainSecs % 3600) / 60);
-      var s = remainSecs % 60;
+    // Immediately fetch current slot to anchor the countdown accurately
+    rpcCall('getSlot').then(function(current) {
+      lastKnownSlot = current;
+      lastKnownTime = Date.now();
+      document.getElementById('currentSlot').textContent = current.toLocaleString();
 
-      document.getElementById('ctHours').textContent        = String(h).padStart(2, '0');
-      document.getElementById('ctMins').textContent         = String(m).padStart(2, '0');
-      document.getElementById('ctSecs').textContent         = String(s).padStart(2, '0');
-      document.getElementById('slotsRemaining').textContent = remaining.toLocaleString();
-
-      if (remainSecs <= 0) {
-        clearInterval(countdownInterval);
+      if (current >= targetSlot) {
         setStatus('Leader slot reached!', 'done');
+        return;
       }
-    }
 
-    tick();
-    countdownInterval = setInterval(tick, 1000);
+      // UI tick every second — interpolates between polls
+      countdownInterval = setInterval(function() {
+        var elapsed      = Date.now() - lastKnownTime;
+        var elapsedSlots = elapsed / ms;
+        var remaining    = Math.max(0, targetSlot - lastKnownSlot - elapsedSlots);
+        var remainSecs   = Math.max(0, Math.round(remaining * ms / 1000));
+
+        var h = Math.floor(remainSecs / 3600);
+        var m = Math.floor((remainSecs % 3600) / 60);
+        var s = remainSecs % 60;
+
+        document.getElementById('ctHours').textContent        = String(h).padStart(2, '0');
+        document.getElementById('ctMins').textContent         = String(m).padStart(2, '0');
+        document.getElementById('ctSecs').textContent         = String(s).padStart(2, '0');
+        document.getElementById('slotsRemaining').textContent = Math.max(0, Math.ceil(remaining)).toLocaleString();
+
+        if (remainSecs <= 0) {
+          clearInterval(countdownInterval);
+          clearInterval(pollInterval);
+          setStatus('Leader slot reached!', 'done');
+        }
+      }, 1000);
+
+      // Poll actual chain slot every 5s and recalibrate
+      pollInterval = setInterval(function() {
+        rpcCall('getSlot').then(function(current) {
+          lastKnownSlot = current;
+          lastKnownTime = Date.now();
+          document.getElementById('currentSlot').textContent = current.toLocaleString();
+
+          // Recalculate remaining slots to go
+          var slotsLeft = Math.max(0, targetSlot - current);
+          document.getElementById('slotsRemaining').textContent = slotsLeft.toLocaleString();
+
+          if (current >= targetSlot) {
+            clearInterval(countdownInterval);
+            clearInterval(pollInterval);
+            setStatus('Leader slot reached!', 'done');
+          }
+        }).catch(function() {
+          // silent fail on poll — countdown keeps running from last known
+        });
+      }, 5000);
+
+    }).catch(function(e) {
+      log('Poll error: ' + e.message, 'err');
+    });
   }
 </script>
 </body>
