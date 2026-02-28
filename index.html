@@ -17,7 +17,6 @@
     --danger: #ff4466;
     --text: #c8deff;
     --muted: #4a6080;
-    --glow: 0 0 20px rgba(0,245,196,0.25);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,10 +44,8 @@
   body::after {
     content: '';
     position: fixed;
-    top: -200px;
-    left: -200px;
-    width: 600px;
-    height: 600px;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
     background: radial-gradient(circle, rgba(0,136,255,0.08) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
@@ -56,27 +53,170 @@
 
   .orb2 {
     position: fixed;
-    bottom: -200px;
-    right: -200px;
-    width: 500px;
-    height: 500px;
+    bottom: -200px; right: -200px;
+    width: 500px; height: 500px;
     background: radial-gradient(circle, rgba(0,245,196,0.06) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
   }
 
+  /* ── NAV ── */
+  nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(4,7,15,0.9);
+    backdrop-filter: blur(14px);
+    gap: 12px;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .nav-link {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 11px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-link:hover {
+    color: var(--accent);
+    border-color: rgba(0,245,196,0.2);
+    background: rgba(0,245,196,0.06);
+  }
+
+  /* Dropdown */
+  .nav-dropdown { position: relative; }
+
+  .nav-dropdown-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-dropdown-btn:hover,
+  .nav-dropdown.open .nav-dropdown-btn {
+    color: var(--accent);
+    border-color: rgba(0,245,196,0.2);
+    background: rgba(0,245,196,0.06);
+  }
+
+  .chevron { transition: transform 0.2s; }
+  .nav-dropdown.open .chevron { transform: rotate(180deg); }
+
+  .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 148px;
+    z-index: 200;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+
+  .nav-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .nav-dropdown-menu a:hover {
+    background: rgba(0,245,196,0.08);
+    color: var(--accent);
+  }
+
+  .nav-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 3px;
+    flex-shrink: 0;
+  }
+
+  /* Icon-only links */
+  .icon-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .icon-link:hover {
+    border-color: rgba(0,245,196,0.3);
+    color: var(--accent);
+    background: rgba(0,245,196,0.06);
+  }
+
+  .icon-link svg {
+    width: 15px; height: 15px;
+    fill: currentColor;
+    display: block;
+  }
+
+  /* ── CONTAINER ── */
   .container {
     position: relative;
     z-index: 1;
     max-width: 760px;
     margin: 0 auto;
-    padding: 40px 24px 80px;
+    padding: 48px 24px 80px;
   }
 
-  header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
+  header { text-align: center; margin-bottom: 48px; }
 
   .badge {
     display: inline-flex;
@@ -139,17 +279,8 @@
     margin-bottom: 12px;
   }
 
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .input-group { display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
 
   label {
     font-size: 12px;
@@ -190,8 +321,6 @@
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
   }
 
   .btn-primary {
@@ -213,16 +342,10 @@
     box-shadow: none;
   }
 
-  .slot-meter {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-  }
+  .slot-meter { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
 
   .meter-bar {
-    flex: 1;
-    height: 4px;
+    flex: 1; height: 4px;
     background: var(--border);
     border-radius: 4px;
     overflow: hidden;
@@ -247,7 +370,6 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
-    transition: border-color 0.3s;
   }
 
   .stat-card.highlight {
@@ -275,21 +397,9 @@
   }
 
   .stat-value.accent { color: var(--accent); }
-  .stat-value.warn { color: var(--warn); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-  .stat-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  .countdown {
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-  }
-
+  .countdown { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
   .countdown-unit { text-align: center; }
 
   .countdown-num {
@@ -347,16 +457,11 @@
   .status-row.done      { background: rgba(0,245,196,0.08);  border: 1px solid rgba(0,245,196,0.2);  color: var(--accent); }
   .status-row.error     { background: rgba(255,68,102,0.08);  border: 1px solid rgba(255,68,102,0.2);  color: var(--danger); }
 
-  .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   .dot.spin {
     border: 2px solid currentColor;
     border-top-color: transparent;
-    border-radius: 50%;
     animation: spin 0.8s linear infinite;
     width: 10px; height: 10px;
   }
@@ -364,7 +469,6 @@
   .log {
     font-family: 'Space Mono', monospace;
     font-size: 11px;
-    color: var(--muted);
     line-height: 1.8;
     padding: 16px;
     background: rgba(0,0,0,0.3);
@@ -385,12 +489,7 @@
   .no-slots h3 { color: #fff; margin-bottom: 8px; }
   .no-slots p  { color: var(--muted); font-size: 14px; }
 
-  .slot-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
+  .slot-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 
   .slot-pill {
     font-family: 'Space Mono', monospace;
@@ -414,9 +513,7 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50%       { opacity: 0.5; transform: scale(0.8); }
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
-
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -427,21 +524,88 @@
   footer {
     text-align: center;
     margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
     font-size: 12px;
     color: var(--muted);
     font-family: 'Space Mono', monospace;
+    line-height: 2;
   }
 
   footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 620px) {
+    nav { padding: 10px 14px; gap: 8px; }
+    .nav-link { padding: 5px 8px; font-size: 11px; }
+    .nav-dropdown-btn { padding: 5px 8px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
 <div class="orb2"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-left">
+
+    <!-- X (Twitter) -->
+    <a href="https://x.com/rkbehelvi" target="_blank" rel="noopener" class="icon-link" title="Follow on X">
+      <svg viewBox="0 0 24 24">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.632L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+      </svg>
+    </a>
+
+    <!-- Telegram -->
+    <a href="https://t.me/+HtiLywX2Dug3MjJk" target="_blank" rel="noopener" class="icon-link" title="Join Telegram">
+      <svg viewBox="0 0 24 24">
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+      </svg>
+    </a>
+
+  </div>
+
+  <div class="nav-right">
+
+    <!-- Launch my Validator dropdown -->
+    <div class="nav-dropdown" id="launchDropdown">
+      <button class="nav-dropdown-btn" onclick="toggleDropdown()">
+        Launch my Validator
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="nav-dropdown-menu">
+        <a href="https://docs.x1.xyz/validating/create-a-read-only-node" target="_blank" rel="noopener">
+          📄 Manual
+        </a>
+        <a href="https://github.com/BlackBeard085/x1console" target="_blank" rel="noopener">
+          ⚡ One Liner
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <a href="https://x1valhq.xyz/" target="_blank" rel="noopener" class="nav-link">
+      Manage Validator
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a href="https://x1space.xyz/validators" target="_blank" rel="noopener" class="nav-link">
+      Explorer
+    </a>
+
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
 <div class="container">
 
   <header>
     <div class="badge">X1 Mainnet</div>
-    <h1>Leader Slot<br/><span>Checker</span></h1>
+    <h1>X1 Leader Slot<br/><span>Checker</span></h1>
     <p class="subtitle">Find your validator's next block production slot in real-time</p>
   </header>
 
@@ -451,12 +615,7 @@
       <div class="field">
         <label>Validator Identity Pubkey</label>
         <input type="text" id="pubkey"
-          placeholder="e.g. Bees4UreRCWJKeDJub23QSyCej3wcybFdwv5Dem8fTWt"
-          value=""/>
-      </div>
-      <div class="field">
-        <label>RPC Endpoint</label>
-        <input type="text" id="rpc" value="https://rpc.mainnet.x1.xyz"/>
+          placeholder="Enter your validator identity pubkey..."/>
       </div>
       <button class="btn btn-primary" id="checkBtn" onclick="runCheck()">
         Check Leader Slots
@@ -470,7 +629,7 @@
       <div class="card-label">// Live Log</div>
       <div id="statusRow" class="status-row fetching">
         <div class="dot spin"></div>
-        <span id="statusText">Initializing...</span>
+        <span>Initializing...</span>
       </div>
       <div class="log" id="logBox"></div>
     </div>
@@ -559,14 +718,31 @@
   </div>
 
   <footer>
-    Built for X1 Mainnet &nbsp;·&nbsp;
+    Built for X1 Blockchain &nbsp;·&nbsp;
     RPC: <a href="https://rpc.mainnet.x1.xyz" target="_blank">rpc.mainnet.x1.xyz</a>
+    <br/>
+    <a href="https://x1space.xyz/validators" target="_blank">Explorer</a>
+    &nbsp;·&nbsp;
+    <a href="https://x1valhq.xyz/" target="_blank">Manage Validator</a>
+    &nbsp;·&nbsp;
+    <a href="https://x.com/rkbehelvi" target="_blank">X</a>
+    &nbsp;·&nbsp;
+    <a href="https://t.me/+HtiLywX2Dug3MjJk" target="_blank">Telegram</a>
   </footer>
 </div>
 
 <script>
   let countdownInterval = null;
   let msPerSlot = 400;
+
+  function toggleDropdown() {
+    document.getElementById('launchDropdown').classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    const dd = document.getElementById('launchDropdown');
+    if (!dd.contains(e.target)) dd.classList.remove('open');
+  });
 
   function log(msg, type='') {
     const box = document.getElementById('logBox');
@@ -581,13 +757,12 @@
   function setStatus(text, type='fetching') {
     const row = document.getElementById('statusRow');
     row.className = `status-row ${type}`;
-    const dot = type === 'done'  ? '<div class="dot" style="background:var(--accent)"></div>'
+    const dot = type === 'done'   ? '<div class="dot" style="background:var(--accent)"></div>'
                : type === 'error' ? '<div class="dot" style="background:var(--danger)"></div>'
                : '<div class="dot spin"></div>';
     row.innerHTML = `${dot}<span>${text}</span>`;
   }
 
-  // All RPC calls go through our own Vercel serverless proxy /api/rpc
   async function rpcCall(method, params=[]) {
     const res = await fetch('/api/rpc', {
       method: 'POST',
@@ -604,7 +779,6 @@
     const pubkey = document.getElementById('pubkey').value.trim();
     if (!pubkey) { alert('Please enter a validator pubkey.'); return; }
 
-    // Reset UI
     document.getElementById('resultsSection').classList.remove('hidden');
     document.getElementById('mainStats').classList.add('hidden');
     document.getElementById('noSlotsCard').classList.add('hidden');
@@ -631,16 +805,15 @@
       const slotDiff = slot2 - slot1;
       const timeDiff = t2 - t1;
       msPerSlot = slotDiff > 0 ? Math.round(timeDiff / slotDiff) : 400;
-
       log(`Measured: ${slotDiff} slots in ${timeDiff}ms → ${msPerSlot}ms/slot`, 'ok');
 
-      document.getElementById('slotMs').textContent = `${msPerSlot}ms`;
+      document.getElementById('slotMs').textContent        = `${msPerSlot}ms`;
       const quality   = msPerSlot < 420 ? 'Fast ✓' : msPerSlot < 480 ? 'Normal' : 'Slow';
       const fillPct   = Math.min(100, Math.max(0, ((500 - msPerSlot) / 200) * 100));
       const fillColor = msPerSlot < 420 ? 'var(--accent)' : msPerSlot < 480 ? 'var(--warn)' : 'var(--danger)';
-      document.getElementById('slotMeterFill').style.width    = fillPct + '%';
+      document.getElementById('slotMeterFill').style.width      = fillPct + '%';
       document.getElementById('slotMeterFill').style.background = fillColor;
-      document.getElementById('slotQuality').textContent     = quality;
+      document.getElementById('slotQuality').textContent        = quality;
 
       // Step 2: Epoch info
       setStatus('Fetching epoch info...', 'fetching');
@@ -694,13 +867,11 @@
         return;
       }
 
-      const nextSlot   = upcoming[0];
-      const diff       = nextSlot - slot2;
-      const totalSecs  = Math.round(diff * msPerSlot / 1000);
-
+      const nextSlot  = upcoming[0];
+      const diff      = nextSlot - slot2;
+      const totalSecs = Math.round(diff * msPerSlot / 1000);
       log(`Next slot: ${nextSlot.toLocaleString()} (${diff.toLocaleString()} slots away, ~${Math.floor(totalSecs/60)}m ${totalSecs%60}s)`, 'ok');
 
-      // Slot pills
       const slotList = document.getElementById('slotList');
       slotList.innerHTML = '';
       upcoming.slice(0, 20).forEach((s, i) => {
@@ -716,11 +887,10 @@
         slotList.appendChild(more);
       }
 
-      document.getElementById('nextSlotNum').textContent   = nextSlot.toLocaleString();
+      document.getElementById('nextSlotNum').textContent    = nextSlot.toLocaleString();
       document.getElementById('slotsRemaining').textContent = diff.toLocaleString();
 
       startCountdown(diff, msPerSlot, t2);
-
       setStatus('Live — countdown active', 'done');
       document.getElementById('mainStats').classList.remove('hidden');
       document.getElementById('nextSlotCard').classList.remove('hidden');
@@ -747,9 +917,9 @@
       const m = Math.floor((remainSecs % 3600) / 60);
       const s = remainSecs % 60;
 
-      document.getElementById('ctHours').textContent      = String(h).padStart(2,'0');
-      document.getElementById('ctMins').textContent       = String(m).padStart(2,'0');
-      document.getElementById('ctSecs').textContent       = String(s).padStart(2,'0');
+      document.getElementById('ctHours').textContent        = String(h).padStart(2,'0');
+      document.getElementById('ctMins').textContent         = String(m).padStart(2,'0');
+      document.getElementById('ctSecs').textContent         = String(s).padStart(2,'0');
       document.getElementById('slotsRemaining').textContent = remaining.toLocaleString();
 
       if (remainSecs <= 0) {
