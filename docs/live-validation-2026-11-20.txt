@@ -1,0 +1,60 @@
+
+> test:live
+> node scripts/live-validate.mjs
+
+
+9v8bGQk9JhUhbxGock4KAhUfzCe9VtJBX15fNDQY4mkw
+  PASS  report status 200
+  PASS  epoch 449 (direct 449)
+  PASS  epoch start 94438112 == absoluteSlot - slotIndex
+  PASS  relative slots identical (12404)
+  PASS  no malformed/duplicate slots (dropped 0)
+  PASS  2937 windows, all multiples of 4
+  PASS  old vs new upcoming identical (2932)
+  PASS  slot time 366.0 ms (363.6-368.1), 15 samples
+  PASS  next epoch 12640 slots
+  PASS  production 9472/9472
+  info  type=vote name="X1 Labs: (node0)" delinquent=false
+
+4P3xSFEmvrZGYhqo7ivh5eadVQcsorGjpU5nsfz9AWKE
+  PASS  report status 200
+  PASS  epoch 449 (direct 449)
+  PASS  epoch start 94438112 == absoluteSlot - slotIndex
+  PASS  relative slots identical (240)
+  PASS  no malformed/duplicate slots (dropped 0)
+  PASS  60 windows, all multiples of 4
+  PASS  old vs new upcoming identical (44)
+  PASS  slot time 366.0 ms (363.6-368.1), 15 samples
+  PASS  next epoch 268 slots
+  PASS  production 196/196
+  info  type=identity name="Jackpot-1" delinquent=false
+
+DHVaHvHRVeKcGGYeWX93WNJeJY8NzNMfWHhmHZBSEXG8
+  PASS  report status 200
+  PASS  epoch 449 (direct 449)
+  PASS  epoch start 94438112 == absoluteSlot - slotIndex
+  PASS  relative slots identical (0)
+  PASS  no malformed/duplicate slots (dropped 0)
+  PASS  0 windows, all multiples of 4
+  PASS  old vs new upcoming identical (0)
+  PASS  slot time 366.0 ms (363.6-368.1), 15 samples
+  PASS  next epoch 0 slots
+  PASS  production 0/0
+  info  type=identity name="Gambit" delinquent=false
+
+DBvSPQcyhA6gm1cKpChhoQkX6ns4xuKRtaMiNPHY9TLo
+  PASS  report status 200
+  PASS  epoch 449 (direct 449)
+  PASS  epoch start 94438112 == absoluteSlot - slotIndex
+  PASS  relative slots identical (0)
+  PASS  no malformed/duplicate slots (dropped 0)
+  PASS  0 windows, all multiples of 4
+  PASS  old vs new upcoming identical (0)
+  PASS  slot time 366.0 ms (363.6-368.1), 15 samples
+  PASS  next epoch 0 slots
+  PASS  production 0/0
+  info  type=identity name="Teddybear #2" delinquent=true
+
+ALL LIVE CHECKS PASSED — 2026-11-20T10:53:36.718Z
+{"ahead":100,"msPerSlot":366,"predictedInMs":36600,"actualInMs":36763,"errorMs":162,"bandMs":[-237,210],"oldNominal400ErrorMs":-3237}
+{"ahead":300,"msPerSlot":366,"predictedInMs":109801,"actualInMs":110246,"errorMs":445,"bandMs":[-710,629],"oldNominal400ErrorMs":-9754}

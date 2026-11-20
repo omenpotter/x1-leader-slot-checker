@@ -1,0 +1,6 @@
+# X1 Leader Slot Checker
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://x1-leader-slot-checker.vercel.app/sitemap.xml

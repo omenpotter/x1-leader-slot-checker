@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>X1 Leader Schedule Explained — Slots, Epochs and Validator Timing</title>
+<meta name="description" content="How the X1 Mainnet leader schedule works: slots, 216,000-slot epochs, stake-weighted leader selection, four-slot leader windows, timing estimates and skipped slots — with the RPC calls to verify it yourself.">
+<link rel="canonical" href="https://x1-leader-slot-checker.vercel.app/guide">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#05080f">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="ARKBS Labs">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="X1 Leader Slot Checker">
+<meta property="og:title" content="X1 Leader Schedule Explained">
+<meta property="og:description" content="Slots, epochs, leader windows and timing estimates on X1 Mainnet — and how to verify a validator's schedule with RPC.">
+<meta property="og:url" content="https://x1-leader-slot-checker.vercel.app/guide">
+<meta property="og:image" content="https://x1-leader-slot-checker.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="article:modified_time" content="2026-11-20">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="X1 Leader Schedule Explained">
+<meta name="twitter:description" content="Slots, epochs, leader windows and timing estimates on X1 Mainnet.">
+<meta name="twitter:image" content="https://x1-leader-slot-checker.vercel.app/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/app.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://x1-leader-slot-checker.vercel.app/guide#article",
+      "headline": "X1 Leader Schedule Explained — Slots, Epochs and Validator Timing",
+      "description": "How the X1 Mainnet leader schedule works and how to verify a validator's upcoming leader slots with Solana-compatible RPC.",
+      "url": "https://x1-leader-slot-checker.vercel.app/guide",
+      "mainEntityOfPage": "https://x1-leader-slot-checker.vercel.app/guide",
+      "image": "https://x1-leader-slot-checker.vercel.app/og-image.png",
+      "inLanguage": "en",
+      "datePublished": "2026-11-20",
+      "dateModified": "2026-11-20",
+      "proficiencyLevel": "Beginner",
+      "author": { "@id": "https://x1nexus.xyz/#arkbs-labs" },
+      "publisher": { "@id": "https://x1nexus.xyz/#arkbs-labs" },
+      "isPartOf": { "@id": "https://x1-leader-slot-checker.vercel.app/#website" },
+      "about": [
+        { "@type": "Thing", "name": "X1 blockchain", "url": "https://x1.xyz/" },
+        { "@type": "DefinedTerm", "name": "Leader schedule", "inDefinedTermSet": "https://x1-leader-slot-checker.vercel.app/#glossary" },
+        { "@type": "DefinedTerm", "name": "Solana Virtual Machine (SVM)" }
+      ],
+      "citation": [
+        "https://docs.x1.xyz/",
+        "https://docs.x1.xyz/technicals/technical-roadmap/stake-performance-and-randomness-based-leader-selection",
+        "https://docs.x1.xyz/build-on-x1/rpc-rate-limits",
+        "https://solana.com/docs/rpc/http/getleaderschedule"
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://x1nexus.xyz/#arkbs-labs",
+      "name": "ARKBS Labs",
+      "sameAs": ["https://x.com/rkbehelvi"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://x1-leader-slot-checker.vercel.app/#website",
+      "url": "https://x1-leader-slot-checker.vercel.app/",
+      "name": "X1 Leader Slot Checker"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "X1 Leader Slot Checker", "item": "https://x1-leader-slot-checker.vercel.app/" },
+        { "@type": "ListItem", "position": 2, "name": "Leader schedule guide", "item": "https://x1-leader-slot-checker.vercel.app/guide" }
+      ]
+    }
+  ]
+}
+</script>
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/">
+      <picture><source srcset="/assets/img/logo-64.webp" type="image/webp"><img src="/assets/img/logo-64.png" width="32" height="32" alt=""></picture>
+      <span><span class="brand-name">X1 Leader Slot Checker</span><span class="brand-sub">Validator schedule · X1 Mainnet</span></span>
+    </a>
+    <nav class="nav nav-static" aria-label="Primary">
+      <a href="/#checker">Checker</a>
+      <a href="/guide" aria-current="page">Guide</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <article class="article">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Checker</a> / <span aria-current="page">Guide</span></nav>
+    <h1>X1 leader schedule explained</h1>
+    <p class="meta">By ARKBS Labs · Updated <time datetime="2026-11-20">20 November 2026</time> · Figures verified against X1 Mainnet RPC on that date</p>
+
+    <div class="callout"><p><strong>In short:</strong> X1 Mainnet divides time into slots and groups them into <strong>216,000-slot epochs</strong>. Before each epoch, a stake-weighted schedule assigns every slot to a validator identity, in runs of four. A validator's "leader slots" are its turns to produce blocks. You can read the schedule from any X1 RPC node with <code>getLeaderSchedule</code>; converting slot numbers to clock times is always an estimate.</p></div>
+
+    <nav class="toc" aria-label="Contents">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#slots">Slots and slot timing on X1</a></li>
+        <li><a href="#epochs">Epochs on X1 Mainnet</a></li>
+        <li><a href="#selection">How leaders are selected</a></li>
+        <li><a href="#windows">Leader windows</a></li>
+        <li><a href="#verify">Verify a schedule with RPC</a></li>
+        <li><a href="#timing">From slot numbers to clock time</a></li>
+        <li><a href="#skips">Scheduled versus produced blocks</a></li>
+        <li><a href="#svm">X1, the SVM and Solana compatibility</a></li>
+        <li><a href="#sources">Sources</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="slots">1. Slots and slot timing on X1</h2>
+    <p>A <strong>slot</strong> is the window in which one designated validator — the <em>leader</em> — may produce a block. X1's documentation describes slots as fixed at 400 milliseconds, inherited from the Solana design. In practice the observed average is set by the network: on 20 November 2026, <code>getRecentPerformanceSamples</code> on X1 Mainnet reported about 164 slots per 60-second sample, roughly <strong>365 ms per slot</strong>.</p>
+    <p>That difference matters for anyone estimating timing: a projection 100,000 slots ahead differs by more than an hour between 365 ms and 400 ms. The checker therefore measures slot time from recent samples instead of assuming 400 ms.</p>
+
+    <h2 id="epochs">2. Epochs on X1 Mainnet</h2>
+    <p>An <strong>epoch</strong> is a fixed range of slots for which one leader schedule and one stake snapshot apply. <code>getEpochSchedule</code> on X1 Mainnet returns:</p>
+    <table>
+      <thead><tr><th>Field</th><th>X1 Mainnet value</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>slotsPerEpoch</code></td><td>216,000</td><td>Slots in every normal epoch</td></tr>
+        <tr><td><code>leaderScheduleSlotOffset</code></td><td>216,000</td><td>The schedule is known one epoch ahead</td></tr>
+        <tr><td><code>warmup</code></td><td>true</td><td>Early epochs were shorter, doubling in length</td></tr>
+        <tr><td><code>firstNormalEpoch</code></td><td>13</td><td>First full-length epoch</td></tr>
+        <tr><td><code>firstNormalSlot</code></td><td>262,112</td><td>First slot of epoch 13</td></tr>
+      </tbody>
+    </table>
+    <p>For any epoch <em>E</em> ≥ 13, the first slot is <code>262,112 + (E − 13) × 216,000</code>. Epoch 449, for example, starts at slot 94,438,112 — matching the range reported by <code>getBlockProduction</code>. At ~365 ms per slot an X1 epoch lasts about <strong>22 hours</strong> (24 hours at 400 ms). Solana Mainnet epochs are twice as long (432,000 slots, roughly two days), so Solana rules of thumb do not carry over.</p>
+
+    <h2 id="selection">3. How leaders are selected</h2>
+    <p>The leader schedule is derived from the stake distribution: each validator's chance of being chosen for a slot is proportional to its activated stake, and a deterministic pseudo-random seed fixes the order so every node computes the same schedule. More stake means more leader slots, not specific slots.</p>
+    <p>X1's documentation notes that stake weight is currently the only selection criterion and lists <a href="https://docs.x1.xyz/technicals/technical-roadmap/stake-performance-and-randomness-based-leader-selection" target="_blank" rel="noopener">performance- and randomness-based leader selection</a> on its technical roadmap. That is a roadmap item; this guide describes the network as it behaves today.</p>
+
+    <h2 id="windows">4. Leader windows</h2>
+    <p>Leaders are scheduled in runs of <strong>four consecutive slots</strong>. In the recorded schedule for one X1 validator, every assignment appeared as a run such as 2232, 2233, 2234, 2235 (epoch-relative). The checker groups these runs into "leader windows" so a schedule of 236 slots reads as 59 windows.</p>
+
+    <h2 id="verify">5. Verify a schedule with RPC</h2>
+    <p>Everything the checker shows can be reproduced with public JSON-RPC calls against <code>https://rpc.mainnet.x1.xyz</code>. Request only the identity you need — the unfiltered schedule for all validators is about 1.4 MB.</p>
+<pre>curl https://rpc.mainnet.x1.xyz -s -X POST -H 'Content-Type: application/json' -d '{
+  "jsonrpc": "2.0", "id": 1, "method": "getLeaderSchedule",
+  "params": [null, { "identity": "&lt;VALIDATOR_IDENTITY&gt;" }]
+}'</pre>
+    <p>The result maps the identity to epoch-relative slot indices. Add the epoch's first slot to get absolute slot numbers. To read the next epoch, pass any slot inside it as the first parameter; nodes return <code>null</code> for epochs whose schedule is not yet computable.</p>
+    <p>If you only have a <strong>vote account</strong>, call <code>getVoteAccounts</code> with <code>{"votePubkey": "…"}</code> and use the returned <code>nodePubkey</code>. Mind the <a href="https://docs.x1.xyz/build-on-x1/rpc-rate-limits" target="_blank" rel="noopener">public RPC rate limits</a> (per IP: 300 requests per 5 seconds, 150,000 per hour).</p>
+
+    <h2 id="timing">6. From slot numbers to clock time</h2>
+    <p>The schedule is defined in slots, not seconds. To estimate when slot <em>S</em> begins:</p>
+    <ol>
+      <li>Observe the current slot <em>C</em> at a known time <em>t</em>.</li>
+      <li>Measure average slot duration <em>d</em> from recent performance samples.</li>
+      <li>Estimate start ≈ <em>t</em> + (<em>S</em> − <em>C</em>) × <em>d</em>.</li>
+    </ol>
+    <p>The checker also computes the estimate with the fastest and slowest recent one-minute samples to show a range, and recalibrates against the live slot every 20 seconds. Uncertainty grows with distance: a slot an hour away is far more predictable than one twenty hours away.</p>
+
+    <h2 id="skips">7. Scheduled versus produced blocks</h2>
+    <p>A leader slot is an opportunity, not a guarantee. If the leader is offline, delinquent, out of sync or its block does not reach the cluster, the slot is <strong>skipped</strong>. <code>getBlockProduction</code> returns, per identity, the leader slots elapsed so far this epoch and the blocks actually produced; the difference is the skip count. X1 Space and the checker both show these figures, and elapsed windows in the checker link to the block page on <a href="https://x1space.xyz/Blocks" target="_blank" rel="noopener">X1 Space</a>.</p>
+
+    <h2 id="svm">8. X1, the SVM and Solana compatibility</h2>
+    <p>X1 is a high-performance layer-1 that is fully compatible with the <strong>Solana Virtual Machine (SVM)</strong>; its RPC currently reports a Solana-compatible validator client (<code>solana-core 4.0.4</code>). That compatibility is why standard tools — the <code>solana</code> CLI, wallets and the JSON-RPC methods above — work against X1. X1 changes several economic and network parameters relative to Solana, including zero-cost validator votes and congestion-reflective dynamic base fees, and its epoch length and observed slot timing differ as described above.</p>
+
+    <h2 id="sources">Sources</h2>
+    <ul class="sources">
+      <li><a href="https://docs.x1.xyz/" target="_blank" rel="noopener">Introduction to X1</a> — X1 documentation</li>
+      <li><a href="https://docs.x1.xyz/technicals/technical-roadmap/stake-performance-and-randomness-based-leader-selection" target="_blank" rel="noopener">Stake, performance, and randomness-based leader selection</a> — X1 technical roadmap</li>
+      <li><a href="https://docs.x1.xyz/build-on-x1/rpc-rate-limits" target="_blank" rel="noopener">RPC rate limits</a> and <a href="https://docs.x1.xyz/build-on-x1/resources" target="_blank" rel="noopener">developer resources</a> — X1 documentation</li>
+      <li><a href="https://solana.com/docs/rpc/http/getleaderschedule" target="_blank" rel="noopener">getLeaderSchedule</a>, <a href="https://solana.com/docs/rpc/http/getepochschedule" target="_blank" rel="noopener">getEpochSchedule</a>, <a href="https://solana.com/docs/rpc/http/getblockproduction" target="_blank" rel="noopener">getBlockProduction</a> — Solana-compatible RPC reference</li>
+      <li>Live X1 Mainnet RPC responses recorded 20 November 2026 (epoch 449)</li>
+    </ul>
+    <p class="mt-28"><a class="btn btn-primary btn-link" href="/#checker">Check a validator's leader slots</a></p>
+  </article>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="tagline">Built for X1 Blockchain — Engineering Worlds Not Just Software</p>
+    <p>An independent ARKBS Labs X1 ecosystem tool. Not affiliated with or endorsed by the X1 core team. · <a href="/">Checker</a> · <a href="https://x1space.xyz/" target="_blank" rel="noopener">X1 Space explorer</a> · <a href="https://docs.x1.xyz/" target="_blank" rel="noopener">X1 docs</a></p>
+  </div>
+</footer>
+</body>
+</html>

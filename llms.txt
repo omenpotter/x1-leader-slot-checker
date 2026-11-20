@@ -1,0 +1,18 @@
+# X1 Leader Slot Checker
+
+> Read-only web tool that shows an X1 Mainnet validator's leader schedule from live X1 RPC data: the next leader slot, an estimated time with an uncertainty range, every leader slot in the current and next epoch, and blocks produced versus slots scheduled. Built by ARKBS Labs. Independent; not affiliated with the X1 core team.
+
+Key facts (verified against X1 Mainnet RPC, 2026-11-20):
+- X1 Mainnet epochs are 216,000 slots (getEpochSchedule). Solana Mainnet uses 432,000.
+- Leaders are assigned in runs of 4 consecutive slots.
+- Observed average slot time was ~365 ms (getRecentPerformanceSamples); the documented nominal target is 400 ms. Clock times are estimates.
+- The next epoch's schedule is available one epoch ahead (leaderScheduleSlotOffset = 216,000).
+- Validator names come from self-published on-chain validator info and are not verified.
+
+## Pages
+- [X1 Leader Slot Checker](https://x1-leader-slot-checker.vercel.app/): live lookup by validator identity or vote account, FAQ and glossary
+- [X1 leader schedule explained](https://x1-leader-slot-checker.vercel.app/guide): slots, epochs, leader selection, leader windows, timing estimates, verifying with RPC
+
+## Related
+- [X1 Space](https://x1space.xyz/): X1 blockchain explorer — blocks, transactions, validators, tokens
+- [X1 documentation](https://docs.x1.xyz/): official X1 docs
