@@ -1,0 +1,14 @@
+{
+  "name": "X1 Leader Slot Checker",
+  "short_name": "X1 Leader Slots",
+  "description": "Leader schedule and next leader slot for X1 Mainnet validators.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05080f",
+  "theme_color": "#05080f",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
